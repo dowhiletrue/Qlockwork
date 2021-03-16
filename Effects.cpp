@@ -208,6 +208,18 @@ void Effects::showAnimatedBitmap(byte animatedBitmap, eColor color) {
 		;
 	}
 }
+void Effects::flash(eColor color) {
+  uint16_t matrix[16];
+  renderer.clearScreenBuffer(matrix);
+  for (int i = 0; i < 10; i++) {
+    matrix[i] ^= 0b1111111111111111;
+  }
+  writeToBuffer(matrix, 5, color);
+  for (int i = 0; i < 10; i++) {
+    matrix[i] = 0;
+  }
+  writeToBuffer(matrix, 5, color);
+}
 
 void Effects::writeToBuffer(uint16_t aMatrix[], unsigned int aDuration, eColor color) {
 	ledDriver.setBrightness(settings.getBrightness());
@@ -215,4 +227,3 @@ void Effects::writeToBuffer(uint16_t aMatrix[], unsigned int aDuration, eColor c
 	ledDriver.setScreenBuffer(aMatrix);
 	delay(aDuration * RGB_SPEED_CORRECTION);
 }
-

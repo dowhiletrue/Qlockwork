@@ -1221,6 +1221,55 @@ void buttonOnOffPressed()
 }
 
 /******************************************************************************
+"On" pressed.
+******************************************************************************/
+
+void buttonOnPressed()
+{
+  DEBUG_PRINTLN("On/off pressed.");
+  SYSLOG("On/off pressed.");
+
+#ifdef BUZZER
+  // Switch off alarm.
+  if (alarmOn)
+  {
+    DEBUG_PRINTLN("Alarm off.");
+    SYSLOG("Alarm off.");
+    digitalWrite(PIN_BUZZER, LOW);
+    alarmOn = false;
+    setMode(STD_MODE_TIME);
+  }
+#endif
+
+  setLedsOn();
+}
+
+
+/******************************************************************************
+"Off" pressed.
+******************************************************************************/
+
+void buttonOffPressed()
+{
+  DEBUG_PRINTLN("On/off pressed.");
+  SYSLOG("On/off pressed.");
+
+#ifdef BUZZER
+  // Switch off alarm.
+  if (alarmOn)
+  {
+    DEBUG_PRINTLN("Alarm off.");
+    SYSLOG("Alarm off.");
+    digitalWrite(PIN_BUZZER, LOW);
+    alarmOn = false;
+    setMode(STD_MODE_TIME);
+  }
+#endif
+
+  setLedsOff();
+}
+
+/******************************************************************************
 "Mode" pressed.
 ******************************************************************************/
 
@@ -2180,12 +2229,16 @@ void setupWebServer()
 	esp8266WebServer.onNotFound(handleNotFound);
 	esp8266WebServer.on("/", handleRoot);
 	esp8266WebServer.on("/handleButtonOnOff", []() {buttonOnOffPressed(); callRoot();});
+  esp8266WebServer.on("/handleButtonOnOn", []() {buttonOnPressed(); callRoot();});
+  esp8266WebServer.on("/handleButtonOff", []() {buttonOffPressed(); callRoot();});
 	esp8266WebServer.on("/handleButtonSettings", handleButtonSettings);
 	esp8266WebServer.on("/handleButtonEvents", handleButtonEvents);
 	esp8266WebServer.on("/handleButtonMode", []() {buttonModePressed(); callBack();});
 	esp8266WebServer.on("/handleButtonTime", []() {buttonTimePressed(); callBack();});
 	esp8266WebServer.on("/commitSettings", []() {handleCommitSettings(); callBack();});
 	esp8266WebServer.on("/commitEvents", []() {handleCommitEvents(); callBack();});
+  esp8266WebServer.on("/showText", []() {handleShowText(); callBack();});
+  esp8266WebServer.on("/flash", []() {handleFlash(); callBack();});
 	esp8266WebServer.on("/reset", handleReset);
 	esp8266WebServer.on("/factoryReset", handleFactoryReset);
 	esp8266WebServer.on("/wifiReset", handleWiFiReset);
@@ -2796,6 +2849,22 @@ void handleCommitSettings()
 	settings.saveToEEPROM();
 	screenBufferNeedsUpdate = true;
 }
+
+void handleFlash() {
+  int repeat = esp8266WebServer.hasArg("repeat") ? esp8266WebServer.arg("repeat").toInt() : 1;
+  for (int i = 0; i < repeat; i++) {
+      Effects::flash(COLOR_WHITE);
+  }
+  screenBufferNeedsUpdate = true;
+}
+
+void handleShowText()
+{
+  String text = esp8266WebServer.arg("text");
+  Effects::showTickerString(text.c_str(), 7, COLOR_WHITE);
+  screenBufferNeedsUpdate = true;
+}
+
 
 void handleCommitEvents()
 {
